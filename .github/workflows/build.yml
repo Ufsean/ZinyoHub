@@ -1,4 +1,4 @@
-name: Obfuscate with Hercules & Deploy
+name: Sync src to obfuscated
 on:
   push:
     branches:
@@ -7,42 +7,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout ZinyoHub code
+    - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Checkout Hercules Obfuscator
-      uses: actions/checkout@v4
-      with:
-        repository: zeusssz/hercules-obfuscator
-        path: hercules-obfuscator
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-
-    - name: Install Hercules dependencies
-      run: pip install requests
-
-    - name: DEBUG - List all files
-      run: ls -R
-      
-    - name: Obfuscate Files
+    - name: Copy files from src to obfuscated
       run: |
-        # Buat struktur direktori output yang sama dengan src
-        find src -type d -exec mkdir -p obfuscated/{} \;
-        
-        # Loop melalui setiap file .lua di src
-        for file in $(find src -name '*.lua'); do
-          output_file="obfuscated/${file#src/}"
-          echo "Obfuscating $file -> $output_file"
-          # Gunakan path absolut GITHUB_WORKSPACE untuk keandalan
-          python $GITHUB_WORKSPACE/hercules-obfuscator/hercules.py --path "$file" --out "$output_file"
-        done
+        # Hapus folder obfuscated lama jika ada, untuk memastikan sinkronisasi bersih
+        rm -rf obfuscated
+        # Salin semua konten dari src ke obfuscated
+        cp -r src obfuscated
 
-    - name: Commit and Push Obfuscated Files
+    - name: Commit and Push changes
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        commit_message: "Automated: Obfuscate Lua files with Hercules"
+        commit_message: "Automated: Sync files from src to obfuscated"
         branch: main
         file_pattern: 'obfuscated/**'
