@@ -7,29 +7,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-    - name: Install Lua Obfuscator
-      run: npm install -g lua-obfuscator
-    - name: Obfuscate Lua Files
-      run: |
-        mkdir -p obfuscated/Core
-        mkdir -p obfuscated/Games
-        mkdir -p obfuscated/UI/Elements
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-        lua-obfuscator src/Loader.lua --output obfuscated/Loader.lua
-        lua-obfuscator src/MainModule.lua --output obfuscated/MainModule.lua
-        
-        for file in src/Core/*.lua; do lua-obfuscator "$file" --output "obfuscated/Core/$(basename "$file")"; done
-        for file in src/Games/*.lua; do lua-obfuscator "$file" --output "obfuscated/Games/$(basename "$file")"; done
-        for file in src/UI/*.lua; do lua-obfuscator "$file" --output "obfuscated/UI/$(basename "$file")"; done
-        for file in src/UI/Elements/*.lua; do lua-obfuscator "$file" --output "obfuscated/UI/Elements/$(basename "$file")"; done
+    - name: Obfuscate Lua Files
+      uses: brian8544/lua-obfuscator-action@v1
+      with:
+        source-dir: 'src'
+        output-dir: 'obfuscated'
+
     - name: Commit and Push Obfuscated Files
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
         commit_message: "Automated: Obfuscate Lua files"
         branch: main
-        file_pattern: obfuscated/*
+        file_pattern: 'obfuscated/**'
+        repository: .
