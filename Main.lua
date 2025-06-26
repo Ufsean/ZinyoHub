@@ -172,6 +172,30 @@ local function InitializeGUI()
 end
 
 -- ========================
+--      CLEANUP HANDLER
+-- ========================
+local function Cleanup()
+    print("Zinyo Hub: Player is leaving. Cleaning up all processes...")
+    
+    -- Hentikan semua loop dengan mengatur flag menjadi false
+    _G.Zinyo_AutoFarm = false
+    _G.Zinyo_AutoFish = false
+    _G.Zinyo_AutoWater = false
+    _G.Zinyo_AutoHarvest = false
+    
+    -- Rayfield GUI biasanya akan hancur sendiri saat PlayerGui dibersihkan,
+    -- jadi fokus utama kita adalah menghentikan loop latar belakang.
+end
+
+-- Hubungkan ke event PlayerRemoving untuk memastikan pembersihan saat keluar
+Players.PlayerRemoving:Connect(function(player)
+    if player == LocalPlayer then
+        Cleanup()
+    end
+end)
+
+
+-- ========================
 --      EKSEKUSI UTAMA
 -- ========================
 pcall(InitializeGUI)
