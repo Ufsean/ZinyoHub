@@ -74,9 +74,17 @@ GameFeatures.GrowAGarden = {
         _G.Zinyo_AutoHarvest = state
         task.spawn(function()
             while _G.Zinyo_AutoHarvest do
-                print("Zinyo Hub: Auto Harvesting in Grow A Garden...")
-                -- Logika auto harvest ditambahkan di sini
-                task.wait(2)
+                -- PENTING: Ganti "HarvestAllPlants" dengan nama remote event yang benar dari Remote Spy.
+                local harvestRemote = game:GetService("ReplicatedStorage"):FindFirstChild("HarvestAllPlants") 
+                
+                if harvestRemote then
+                    -- PENTING: Anda mungkin perlu mengirim argumen, contoh: harvestRemote:FireServer("All")
+                    harvestRemote:FireServer() 
+                    print("Zinyo Hub: Mencoba memanen semua tanaman...")
+                else
+                    warn("Zinyo Hub: Tidak dapat menemukan Remote Event untuk panen. Periksa namanya.")
+                end
+                task.wait(5) -- Tunggu 5 detik sebelum mencoba lagi
             end
         end)
     end
