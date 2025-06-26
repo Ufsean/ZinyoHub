@@ -46,15 +46,110 @@ GameFeatures.BloxFruit = {
 
 --- Fitur untuk Fisch ---
 GameFeatures.Fisch = {
+    -- Auto Fishing yang diperbaiki
     AutoFish = function(state)
         _G.Zinyo_AutoFish = state
         task.spawn(function()
             while _G.Zinyo_AutoFish do
-                print("Zinyo Hub: Auto Fishing in Fisch...")
-                -- Logika auto fish ditambahkan di sini
-                task.wait(2)
+                -- Cari remote event untuk memancing
+                local fishingRemote = game:GetService("ReplicatedStorage"):FindFirstChild("FishingRemote")
+                
+                if fishingRemote then
+                    -- Proses memancing: casting dan reeling
+                    fishingRemote:FireServer("Cast")  -- Lempar kail
+                    task.wait(2)
+                    fishingRemote:FireServer("Reel")  -- Tarik kail
+                    print("Zinyo Hub: Berhasil memancing!")
+                else
+                    warn("Zinyo Hub: Tidak menemukan Fishing Remote")
+                end
+                task.wait(5) -- Cooldown 5 detik
             end
         end)
+    end,
+    
+    -- Sistem teleport ke lokasi populer
+    TeleportTo = function(location)
+        local locations = {
+            ["Danau"] = Vector3.new(100, 50, 200),
+            ["Sungai"] = Vector3.new(-120, 30, 300),
+            ["Laut Dalam"] = Vector3.new(0, 20, 500),
+            ["Pelabuhan"] = Vector3.new(80, 10, -150)
+        }
+        
+        if locations[location] and LocalPlayer.Character then
+            LocalPlayer.Character:MoveTo(locations[location])
+            print("Zinyo Hub: Teleport ke "..location)
+        end
+    end,
+    
+    -- Fitur client-side
+    SetSpeed = function(speed)
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = speed
+            print("Zinyo Hub: WalkSpeed diatur menjadi "..speed)
+        end
+    end,
+    
+    SetJump = function(power)
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.JumpPower = power
+            print("Zinyo Hub: JumpPower diatur menjadi "..power)
+        end
+    end,
+    
+    -- ESP untuk spot fishing terbaik
+    FishingSpotESP = function(state)
+        _G.Zinyo_FishingESP = state
+        
+        if state then
+            task.spawn(function()
+                -- Warna untuk spot fishing
+                local spotColors = {
+                    ["Common"] = Color3.new(0, 1, 0),      -- Hijau untuk ikan biasa
+                    ["Rare"] = Color3.new(0, 0, 1),        -- Biru untuk ikan langka
+                    ["Epic"] = Color3.new(0.5, 0, 0.5),    -- Ungu untuk ikan epik
+                    ["Legendary"] = Color3.new(1, 0.5, 0)  -- Oranye untuk ikan legendaris
+                }
+                
+                -- Bersihkan highlight sebelumnya
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj:FindFirstChild("ZinyoFishingSpotHighlight") then
+                        obj.ZinyoFishingSpotHighlight:Destroy()
+                    end
+                end
+                
+                while _G.Zinyo_FishingESP do
+                    -- Cari semua spot fishing di workspace
+                    for _, spot in pairs(workspace:GetDescendants()) do
+                        if spot.Name:match("FishingSpot") or spot.Name:match("FishSpawn") then
+                            if not spot:FindFirstChild("ZinyoFishingSpotHighlight") then
+                                local highlight = Instance.new("Highlight")
+                                highlight.Name = "ZinyoFishingSpotHighlight"
+                                highlight.Parent = spot
+                                
+                                -- Tentukan rarity berdasarkan nama atau properti
+                                local rarity = "Common"
+                                if spot.Name:match("Rare") then rarity = "Rare"
+                                elseif spot.Name:match("Epic") then rarity = "Epic"
+                                elseif spot.Name:match("Legendary") then rarity = "Legendary" end
+                                
+                                highlight.FillColor = spotColors[rarity]
+                                highlight.OutlineColor = highlight.FillColor
+                            end
+                        end
+                    end
+                    task.wait(5) -- Refresh setiap 5 detik
+                end
+                
+                -- Hapus semua highlight saat ESP dimatikan
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj:FindFirstChild("ZinyoFishingSpotHighlight") then
+                        obj.ZinyoFishingSpotHighlight:Destroy()
+                    end
+                end
+            end)
+        end
     end
 }
 
@@ -87,6 +182,82 @@ GameFeatures.GrowAGarden = {
                 task.wait(5) -- Tunggu 5 detik sebelum mencoba lagi
             end
         end)
+    end,
+    
+    -- FITUR BARU
+    SetSpeed = function(speed)
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = speed
+            print("Zinyo Hub: WalkSpeed diatur menjadi "..speed)
+        end
+    end,
+    
+    SetJump = function(power)
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.JumpPower = power
+            print("Zinyo Hub: JumpPower diatur menjadi "..power)
+        end
+    end,
+    
+    AutoClick = function(state)
+        _G.Zinyo_AutoClick = state
+        task.spawn(function()
+            while _G.Zinyo_AutoClick do
+                mouse1click()
+                task.wait(0.5)
+            end
+        end)
+    end,
+    
+    PlantESP = function(state)
+        _G.Zinyo_PlantESP = state
+        
+        if state then
+            task.spawn(function()
+                -- Warna untuk tanaman berbeda
+                local plantColors = {
+                    ["Tomato"] = Color3.new(1, 0, 0),
+                    ["Carrot"] = Color3.new(1, 0.5, 0),
+                    ["Rose"] = Color3.new(1, 0, 1),
+                    -- Tambahkan lebih banyak jenis tanaman sesuai kebutuhan
+                }
+                
+                local defaultColor = Color3.new(0, 1, 0) -- Hijau untuk tanaman yang tidak dikenal
+                
+                -- Bersihkan highlight sebelumnya
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj:FindFirstChild("ZinyoPlantHighlight") then
+                        obj.ZinyoPlantHighlight:Destroy()
+                    end
+                end
+                
+                while _G.Zinyo_PlantESP do
+                    -- Cari semua tanaman di workspace
+                    for _, plant in pairs(workspace:GetDescendants()) do
+                        if plant.Name:match("Plant") or plant.Name:match("Bush") or plant:IsA("Model") then
+                            if not plant:FindFirstChild("ZinyoPlantHighlight") then
+                                local highlight = Instance.new("Highlight")
+                                highlight.Name = "ZinyoPlantHighlight"
+                                highlight.Parent = plant
+                                
+                                -- Tentukan warna berdasarkan jenis tanaman
+                                local plantType = plant.Name
+                                highlight.FillColor = plantColors[plantType] or defaultColor
+                                highlight.OutlineColor = highlight.FillColor
+                            end
+                        end
+                    end
+                    task.wait(5) -- Refresh setiap 5 detik
+                end
+                
+                -- Hapus semua highlight saat ESP dimatikan
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj:FindFirstChild("ZinyoPlantHighlight") then
+                        obj.ZinyoPlantHighlight:Destroy()
+                    end
+                end
+            end)
+        end
     end
 }
 
@@ -137,9 +308,38 @@ local function InitializeGUI()
         local Module = GameFeatures.Fisch
 
         Tab:CreateToggle({
-            Name = "Auto Fish",
+            Name = "Auto Fishing",
             CurrentValue = false,
             Callback = Module.AutoFish
+        })
+        
+        Tab:CreateDropdown({
+            Name = "Teleport Lokasi",
+            Options = {"Danau", "Sungai", "Laut Dalam", "Pelabuhan"},
+            CurrentValue = "Danau",
+            Callback = Module.TeleportTo
+        })
+        
+        Tab:CreateSlider({
+            Name = "Walk Speed",
+            Range = {16, 100},
+            Increment = 1,
+            CurrentValue = 16,
+            Callback = Module.SetSpeed
+        })
+        
+        Tab:CreateSlider({
+            Name = "Jump Power",
+            Range = {50, 200},
+            Increment = 5,
+            CurrentValue = 50,
+            Callback = Module.SetJump
+        })
+        
+        Tab:CreateToggle({
+            Name = "Fishing Spot ESP",
+            CurrentValue = false,
+            Callback = Module.FishingSpotESP
         })
 
     elseif currentGame == "GrowAGarden" then
@@ -155,6 +355,31 @@ local function InitializeGUI()
             Name = "Auto Harvest",
             CurrentValue = false,
             Callback = Module.AutoHarvest
+        })
+        -- Fitur baru
+        Tab:CreateSlider({
+            Name = "Walk Speed",
+            Range = {16, 100},
+            Increment = 1,
+            CurrentValue = 16,
+            Callback = Module.SetSpeed
+        })
+        Tab:CreateSlider({
+            Name = "Jump Power",
+            Range = {50, 200},
+            Increment = 5,
+            CurrentValue = 50,
+            Callback = Module.SetJump
+        })
+        Tab:CreateToggle({
+            Name = "Auto Click",
+            CurrentValue = false,
+            Callback = Module.AutoClick
+        })
+        Tab:CreateToggle({
+            Name = "Plant ESP (Sorot Tanaman)",
+            CurrentValue = false,
+            Callback = Module.PlantESP
         })
     end
 
@@ -182,6 +407,9 @@ local function Cleanup()
     _G.Zinyo_AutoFish = false
     _G.Zinyo_AutoWater = false
     _G.Zinyo_AutoHarvest = false
+    _G.Zinyo_AutoClick = false
+    _G.Zinyo_PlantESP = false
+    _G.Zinyo_FishingESP = false
     
     -- Rayfield GUI biasanya akan hancur sendiri saat PlayerGui dibersihkan,
     -- jadi fokus utama kita adalah menghentikan loop latar belakang.
