@@ -9,8 +9,6 @@ jobs:
     steps:
     - name: Checkout ZinyoHub code
       uses: actions/checkout@v4
-      with:
-        path: ZinyoHub
 
     - name: Checkout Hercules Obfuscator
       uses: actions/checkout@v4
@@ -27,7 +25,6 @@ jobs:
       run: pip install requests
 
     - name: Obfuscate Files
-      working-directory: ZinyoHub
       run: |
         # Buat struktur direktori output yang sama dengan src
         find src -type d -exec mkdir -p obfuscated/{} \;
@@ -36,8 +33,7 @@ jobs:
         for file in $(find src -name '*.lua'); do
           output_file="obfuscated/${file#src/}"
           echo "Obfuscating $file -> $output_file"
-          # Jalankan hercules dari direktori ZinyoHub
-          python ../hercules-obfuscator/hercules.py --path "$file" --out "$output_file"
+          python hercules-obfuscator/hercules.py --path "$file" --out "$output_file"
         done
 
     - name: Commit and Push Obfuscated Files
@@ -45,5 +41,4 @@ jobs:
       with:
         commit_message: "Automated: Obfuscate Lua files with Hercules"
         branch: main
-        file_pattern: 'ZinyoHub/obfuscated/**'
-        repository: ZinyoHub
+        file_pattern: 'obfuscated/**'
