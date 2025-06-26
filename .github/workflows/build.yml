@@ -1,4 +1,4 @@
-name: Obfuscate & Deploy
+name: Obfuscate with Hercules & Deploy
 on:
   push:
     branches:
@@ -7,19 +7,43 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
+    - name: Checkout ZinyoHub code
       uses: actions/checkout@v4
-
-    - name: Obfuscate Lua Files
-      uses: finb/lua-obfuscator-action@main
       with:
-        source-dir: 'src'
-        output-dir: 'obfuscated'
+        path: ZinyoHub
+
+    - name: Checkout Hercules Obfuscator
+      uses: actions/checkout@v4
+      with:
+        repository: zeusssz/hercules-obfuscator
+        path: hercules-obfuscator
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install Hercules dependencies
+      run: pip install -r hercules-obfuscator/requirements.txt
+
+    - name: Obfuscate Files
+      working-directory: ZinyoHub
+      run: |
+        # Buat struktur direktori output yang sama dengan src
+        find src -type d -exec mkdir -p obfuscated/{} \;
+        
+        # Loop melalui setiap file .lua di src
+        for file in $(find src -name '*.lua'); do
+          output_file="obfuscated/${file#src/}"
+          echo "Obfuscating $file -> $output_file"
+          # Jalankan hercules dari direktori ZinyoHub
+          python ../hercules-obfuscator/hercules.py --path "$file" --out "$output_file"
+        done
 
     - name: Commit and Push Obfuscated Files
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        commit_message: "Automated: Obfuscate Lua files"
+        commit_message: "Automated: Obfuscate Lua files with Hercules"
         branch: main
-        file_pattern: 'obfuscated/**'
-        repository: .
+        file_pattern: 'ZinyoHub/obfuscated/**'
+        repository: ZinyoHub
