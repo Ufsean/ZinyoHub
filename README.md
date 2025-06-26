@@ -14,7 +14,7 @@ Zinyo Hub adalah sebuah GUI library untuk berbagai game di Roblox.
 Jalankan script berikut di executor Roblox Anda:
 
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/kacalayar/ZinyoHub/main/obfuscated/Loader.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Ufsean/ZinyoHub/main/obfuscated/Loader.lua"))()
 ```
 
 ## Game yang Didukung
