@@ -24,6 +24,9 @@ jobs:
     - name: Install Hercules dependencies
       run: pip install requests
 
+    - name: DEBUG - List all files
+      run: ls -R
+
     - name: Obfuscate Files
       run: |
         # Buat struktur direktori output yang sama dengan src
