@@ -26,7 +26,7 @@ jobs:
 
     - name: DEBUG - List all files
       run: ls -R
-
+      
     - name: Obfuscate Files
       run: |
         # Buat struktur direktori output yang sama dengan src
@@ -36,7 +36,8 @@ jobs:
         for file in $(find src -name '*.lua'); do
           output_file="obfuscated/${file#src/}"
           echo "Obfuscating $file -> $output_file"
-          python hercules-obfuscator/hercules.py --path "$file" --out "$output_file"
+          # Gunakan path absolut GITHUB_WORKSPACE untuk keandalan
+          python $GITHUB_WORKSPACE/hercules-obfuscator/hercules.py --path "$file" --out "$output_file"
         done
 
     - name: Commit and Push Obfuscated Files
