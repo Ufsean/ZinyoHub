@@ -11,7 +11,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Obfuscate Lua Files
-      uses: brian8544/lua-obfuscator-action@v1
+      uses: Finb/lua-obfuscator-action@main
       with:
         source-dir: 'src'
         output-dir: 'obfuscated'
